@@ -1,0 +1,5 @@
+{
+    "remote-debugging-port": 9222,
+    "edge_driver_path": "C:\\Users\\arthu\\Tools\\WebDriver\\edgedriver_win64\\msedgedriver.exe",
+    "rewe_url": "https://shop.rewe.de/"
+}
