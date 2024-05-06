@@ -1,0 +1,10 @@
+name: ProductPreparationTimeSchema
+fields:
+  - name: product_name
+    description: The original name of the product item
+
+  - name: preparation_time
+    description: The total time required to make the product edible in minutes
+
+  - name: preparation_steps
+    description: All steps required to make the product edible, with the time required for each step

@@ -1,0 +1,13 @@
+name: MatchNamesSchema
+fields:
+  - name: i1
+    type: int
+    description: numerical index of the food from NAMES_1. Not the name itself.
+
+  - name: i2
+    type: int
+    description: numerical index of the most closely resembling food from NAMES_2. Not the name itself.
+
+  - name: Similarity 
+    type: float
+    description: A similarity score from 0 to 1, based on how closely the two foods macro and micronutrients resemble each other. (1=same food, 0=no match)

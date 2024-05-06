@@ -1,0 +1,70 @@
+pipeline_prompts:
+  system_message: "You are an expert german-english translator and food scientist."
+  instructions: |
+    You will be provided with two lists of food labels, NAMES_1 and NAMES_2. 
+    Your task is to match the index of each food from NAMES_1 to the index of the most closely resembling food from NAMES_2.
+    If several feasible options exist, prioritize macronutrient and micronutrient similarity over processing, texture or other characteristics.
+    For every pair provide a similarity score from 0 to 1, based on how closely the two foods resemble each other.
+
+    - 1: perfect match
+    - 0: no match
+
+  examples_prompt:
+    example_prompt: |
+      NAMES_1:
+      {NAMES_1}
+
+      NAMES_2:
+      {NAMES_2}
+      
+      Output:
+      {Output}
+    suffix: |
+      Input:
+      NAMES_1:
+      {NAMES_1}
+
+      NAMES_2:
+      {NAMES_2}
+
+      Output:
+    examples:
+      - NAMES_1: |
+          0: Arla Skyr Natur 450g
+          1: ja! Hähnchenbrust Filetstücke Klassik 150g
+          2: Hähnchen-Minutenschnitzel aus dem Hähnchenbrustfilet geschnitten, mariniert Paprika mit 15% Joghurt, frisch
+          3: Junghahneier aus biologischer Landwirtschaft
+
+        NAMES_2: |
+          0: Cheese, cottage, lowfat, 2% milkfat
+          1: Chicken, breast, boneless, skinless, raw
+
+        Output: |
+          - i1: 0
+            i2: 0
+            similarity: 0.8
+
+          - i1: 1
+            i2: 1
+            similarity: 1.0
+
+          - i1: 2
+            i2: 1
+            similarity: 0.9
+            
+          - i1: 3
+            i2: 1
+            similarity: 0.2
+
+final_prompt: |
+  SYSTEM: 
+  {system}
+
+  INSTRUCTIONS: 
+  {instructions}
+
+  EXAMPLES: 
+  {examples}
+
+# note: examples contais the suffix for
+# INPUT: {Input}, OUTPUT: {Output}

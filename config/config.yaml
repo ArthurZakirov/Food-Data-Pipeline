@@ -1,0 +1,18 @@
+defaults:
+  - chain: default
+
+data:
+  rewe_path: data/processed/cleaned_rewe_dataset.csv
+  fdc_path: data/processed/fdc_data.h5
+  output_path: data/processed/merged_rewe_dfc_dataset.csv
+
+hydra:
+  run:
+    dir: ./outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  job:
+    chdir: false
+
+mlflow:
+  experiment_name: "hydra_mlflow"
+  run_name: "test_run"
+  tracking_uri: "mlruns"

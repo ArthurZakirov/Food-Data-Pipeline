@@ -1,0 +1,79 @@
+pipeline_prompts:
+  system_message: "You are an expert chef. You are helping a user with a question about food preparation time."
+  instructions: |
+    For every product estimate the total amount of time required to make it edible. This should include (but not be limited to):
+    - the time it takes to wash off cooking utensils
+    - the time to clean the cooking surface
+    - the time to bring water to boil
+    - the time to heat up the oven
+    - the time to heat up the microwave
+    - the time to serve the food
+    If you can think of any other time-consuming steps, please include them in your calculation.
+
+    Follow these rules:
+    - Assume the person has a dishwasher, so washing plates isn't necessary. 
+    - If there are several variants to consume or prepare a product, always pick the shortest variant.
+      e.g., oats can be eaten without boiling. Vegetables don't necessarily need to be sliced.
+    - Try to identify the level of processing of the product. 
+      e.g., frozen vegetables need to be boiled, while fresh vegetables can be eaten raw.
+      e.g., instant rice can be heated up in the microwave, while regular rice needs to be boiled.
+
+  examples_prompt:
+    example_prompt: "Input: {Input}\nOutput: {Output}"
+    suffix: "Input: {Input}\nOutput:"
+    examples:
+      - Input: Haferflocken
+        Output: |
+          product_name: Haferflocken
+          preparation_steps: 
+            - Unbox : 1 min
+            - Serve Oats: 1 min
+            - Add Water: 1 min
+            - Clean up: 2 min
+            - Total: 5 min
+          preparation_time: 5
+      - Input: Brokkoli Tiefgefroren
+        Output: |
+          product_name: Brokkoli Tiefgefroren
+          preparation_steps: 
+            - Unbox : 1 min
+            - Boil Water: 5 min
+            - Cook Broccoli: 10 min
+            - Serve Broccoli: 1 min
+            - Clean Pot: 3 min
+            - Total: 20 min
+          preparation_time: 20
+      - Input: Express-Reis
+        Output: |
+          product_name: Express-Reis
+          preparation_time: 5
+          preparation_steps: 
+            - Unbox : 1 min
+            - Heat Up In Microwave: 3 min
+            - Clean up: 1 min
+            - Total: 5 min
+      - Input: Reis
+        Output: |
+          product_name: Reis
+          preparation_steps: 
+            - Unbox : 1 min
+            - Boil Water: 5 min
+            - Cook Rice: 12 min
+            - Steam Rice: 4 min
+            - Serve: 2 min
+            - Clean Pot: 4 min
+            - Total: 28 min
+          preparation_time: 28
+
+final_prompt: |
+  SYSTEM: 
+  {system}
+
+  INSTRUCTIONS: 
+  {instructions}
+
+  EXAMPLES: 
+  {examples}
+
+# note: examples contais the suffix for
+# INPUT: {Input}, OUTPUT: {Output}
