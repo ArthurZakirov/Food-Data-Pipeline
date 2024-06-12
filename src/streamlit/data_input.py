@@ -3,7 +3,7 @@ import os
 import streamlit as st
 
 
-def streamlit_data_input(default_data_path):
+def streamlit_dataset_upload(default_data_path):
     if "data_loaded" not in st.session_state:  # Check if data has been loaded
         st.session_state.data_loaded = False  # Initialize the flag
 

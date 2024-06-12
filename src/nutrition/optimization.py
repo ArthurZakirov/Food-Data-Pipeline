@@ -128,7 +128,7 @@ def optimize_diet(
     return df, food_vars
 
 
-def visualize_optimization_results(df, rdi_dict, food_vars=None):
+def create_optimization_results_summary(df, rdi_dict, food_vars=None):
 
     # Extract the solution into a DataFrame
 
@@ -228,4 +228,20 @@ def visualize_optimization_results(df, rdi_dict, food_vars=None):
     )
     summary_df.columns = pd.MultiIndex.from_tuples(summary_df.columns)
     result_df.columns = pd.MultiIndex.from_tuples(result_df.columns)
-    return result_df, summary_df
+
+    def convert_to_int(x):
+        try:
+            return int(x) if pd.notnull(x) else x
+        except:
+            return x
+
+    # Apply the conversion across the DataFrame
+    results_df = results_df.applymap(convert_to_int)
+    total_df = pd.concat([summary_df, results_df], axis=0)
+    return result_df, summary_df, total_df
+
+
+def save_optimization_results(summary_df, results_df, output_path):
+    save_df = results_df.copy()
+    save_df.columns = [f"{col[0]}.{col[1]}" for col in save_df.columns]
+    save_df.to_csv(output_path, index=False)

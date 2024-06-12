@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import argparse
 import json
-from src.streamlit.data_input import streamlit_data_input
+from src.streamlit.data_input import streamlit_dataset_upload
 import streamlit as st
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -25,7 +25,7 @@ st.set_page_config(
 
 
 st.title(f"{page_icon} Welcome To: {page_title}")
-streamlit_data_input(default_data_path=data_path)
+streamlit_dataset_upload(default_data_path=data_path)
 
 df = st.session_state["data"]
 url = df.loc[0, ("Non Nutrient Data", "Image URL")]

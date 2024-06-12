@@ -8,10 +8,13 @@ import plotly.express as px
 import streamlit as st
 import pandas as pd
 
-from src.streamlit.data_input import streamlit_data_input
+from src.streamlit.data_input import streamlit_dataset_upload
 from src.streamlit.page_interaction import manage_constraints, streamlit_user_input
 from src.nutrition.formulas import calculate_nutrient_goals
-from src.nutrition.optimization import optimize_diet, visualize_optimization_results
+from src.nutrition.optimization import (
+    optimize_diet,
+    create_optimization_results_summary,
+)
 from src.visualization.dashboard import (
     visualize_optimization_result_nutrient_breakdown,
     visualize_polar_chart,
