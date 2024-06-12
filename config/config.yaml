@@ -1,10 +1,17 @@
 defaults:
-  - chain: default
+  - chain: match_food_names
+  - embedding: rewe_embedding
+
+# data:
+#   input_path: data/processed/cleaned_rewe_dataset_with_extracted_names.csv
+#   input_column: Regulated Name
+#   output_path: data/processed/cleaned_rewe_dataset_with_extracted_names.csv
+#   output_column: Regulated Name English
 
 data:
-  rewe_path: data/processed/cleaned_rewe_dataset.csv
-  fdc_path: data/processed/fdc_data.h5
-  output_path: data/processed/merged_rewe_dfc_dataset.csv
+  rewe_path: data/processed/cleaned_rewe_dataset_with_extracted_names.csv
+  fdc_path: data/processed/fdc_data.csv
+  output_path: data/processed/rewe_plus_fdc.csv
 
 hydra:
   run:

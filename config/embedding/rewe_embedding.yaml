@@ -1,0 +1,10 @@
+model: text-embedding-3-small
+
+data:
+    path: data/processed/cleaned_rewe_dataset_with_extracted_names.csv
+    columns_to_aggregate: ["Regulated Name English"]
+    n_rows: 100000
+
+chroma:
+    path: data/processed/chroma.db
+    collection_name: rewe_data

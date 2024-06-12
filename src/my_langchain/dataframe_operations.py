@@ -1,10 +1,44 @@
 import pandas as pd
+from tqdm import trange
 from langchain.pydantic_v1 import BaseModel, Field, create_model
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain_openai.output_parsers import JsonOutputKeyToolsParser
 
 from src.my_langchain.chain import build_chain_from_config
+
+
+def process_df_column_with_llm_in_chunks(
+    chain_config, df, input_column, output_column, chunk_size=100
+):
+    chain = build_chain_from_config(chain_config)
+
+    processed_df = pd.DataFrame()
+
+    num_chunks = (len(df) + chunk_size - 1) // chunk_size
+
+    # Process the DataFrame in chunks
+    for i in trange(num_chunks):
+        df_chunk = df.iloc[i * chunk_size : (i + 1) * chunk_size]
+
+        delimiter = "\n"
+        user_input = delimiter.join(df_chunk[input_column].astype(str))
+
+        raw_outputs = chain.invoke(user_input)
+        output = raw_outputs[0]["args"]["items"]
+
+        lookup_dict = {
+            item[chain_config.response_schema.fields[0].name]: item[
+                chain_config.response_schema.fields[1].name
+            ]
+            for item in output
+        }
+
+        df_chunk.loc[:, output_column] = df_chunk[input_column].map(lookup_dict)
+
+        processed_df = pd.concat([processed_df, df_chunk], ignore_index=True)
+
+    return processed_df
 
 
 def processed_df_column_with_llm(chain, column, delimiter="\n-"):
@@ -41,43 +75,20 @@ def pandas_llm_merge(df_1, df_2, left_on, right_on, chain_config, chunk_size=20)
 
         similarity_df = pd.DataFrame(output)
 
-        if isinstance(left_on, tuple):
-            similarity_df.columns = pd.MultiIndex.from_tuples(
-                [("Similarity", col) for col in similarity_df.columns]
-            )
+        merged_df = pd.merge(
+            similarity_df, chunk, how="left", left_on=index_1, right_index=True
+        )
 
-            merged_df = pd.merge(
-                similarity_df,
-                chunk,
-                how="left",
-                left_on=("Similarity", index_1),
-                right_index=True,
-            )
-            final_df = pd.merge(
-                merged_df,
-                df_2,
-                how="left",
-                left_on=("Similarity", index_2),
-                right_index=True,
-            )
+        final_df = pd.merge(
+            merged_df, df_2, how="left", left_on=index_2, right_index=True
+        )
 
-        else:
-            merged_df = pd.merge(
-                similarity_df, chunk, how="left", left_on=index_1, right_index=True
-            )
-
-            final_df = pd.merge(
-                merged_df, df_2, how="left", left_on=index_2, right_index=True
-            )
-
-            final_df.drop(
-                columns=[
-                    col
-                    for col in final_df.columns
-                    if (index_1 in col or index_2 in col)
-                ],
-                inplace=True,
-            )
+        final_df.drop(
+            columns=[
+                col for col in final_df.columns if (index_1 in col or index_2 in col)
+            ],
+            inplace=True,
+        )
 
         final_merged_dfs.append(final_df)
 

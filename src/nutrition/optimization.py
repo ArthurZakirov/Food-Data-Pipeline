@@ -1,89 +1,231 @@
-import pandas as pd
 import pulp as pl
+import pandas as pd
 
 
-def optimize_diet(df, goals, minimum_amount_per_category=1, tolerance=10):
+def calculate_relative_nutrient_df(df, rdi_dict, amount_unit=100, goal=100):
+
+    ################
+    # Flatten the RDI bounds
+    flat_rdi_lower_bound = {}
+    flat_rdi_upper_bound = {}
+
+    for category, nutrients in rdi_dict.items():
+        for nutrient, bounds in nutrients.items():
+            if bounds["lower_bound"] is not None and bounds["lower_bound"] > 0:
+                flat_rdi_lower_bound[(category, nutrient)] = bounds["lower_bound"]
+            if "upper_bound" in bounds and bounds["upper_bound"] is not None:
+                flat_rdi_upper_bound[(category, nutrient)] = bounds["upper_bound"]
+
+    # Calculate percentages relative to the bounds
+    percentage_df = pd.DataFrame(index=df.index)
+    for col in df.columns:
+        if col in flat_rdi_lower_bound:
+            # Calculate percentage relative to the lower bound
+            percentage_df[col] = (df[col] / flat_rdi_lower_bound[col]) * goal
+        elif col in flat_rdi_upper_bound:
+            # Calculate percentage relative to the upper bound if the lower bound is None
+            percentage_df[col] = (df[col] / flat_rdi_upper_bound[col]) * goal
+        else:
+            # Copy non-nutrient data as is
+            percentage_df[col] = df[col]
+
+        if col[0] != "Non Nutrient Data":
+            # Multiply by the amount unit to get the actual amount
+            percentage_df[col] = percentage_df[col] * amount_unit / 100
+
+    percentage_df.columns = pd.MultiIndex.from_tuples(
+        [x for x in percentage_df.columns]
+    )
+    df = percentage_df
+    return df, flat_rdi_lower_bound, flat_rdi_upper_bound
+
+
+def optimize_diet(
+    df, rdi_dict, food_constraints, amount_unit, macro_tolerance=10, micro_tolerance=100
+):
+    df = df.copy()
+    goal = 100
+    df, flat_rdi_lower_bound, flat_rdi_upper_bound = calculate_relative_nutrient_df(
+        df, rdi_dict, amount_unit, goal
+    )
+
     # Create the optimization model
     model = pl.LpProblem("Diet_Optimization", pl.LpMinimize)
 
     # Decision variables: Amounts of each food item to consume
-    food_vars = pl.LpVariable.dicts("Food", df.index, lowBound=0, cat="Continuous")
+    food_vars = pl.LpVariable.dicts("Food", df.index, lowBound=0, cat=pl.LpInteger)
 
-    # Objective function and constraints setup
-    deviations = []
+    # Set the objective: Minimize the number of different foods used
+    model += pl.lpSum(food_vars[i] for i in df.index)
 
-    for nutrient in df.columns.difference(["Name", "Category", "Price (EUR/ 100g)"]):
-        model += (
-            pl.lpSum([df.loc[i, nutrient] * food_vars[i] for i in df.index])
-            >= goals[nutrient] - tolerance,
-            f"{nutrient}_min",
-        )
-        model += (
-            pl.lpSum([df.loc[i, nutrient] * food_vars[i] for i in df.index])
-            <= goals[nutrient] + tolerance,
-            f"{nutrient}_max",
-        )
-        deviations.append(
-            pl.lpSum([df.loc[i, nutrient] * food_vars[i] for i in df.index])
-            - goals[nutrient]
-        )
+    for food_name, limits in food_constraints.items():
+        min_amt, max_amt = limits
+        for i in df.index[df[("Non Nutrient Data", "FDC Name")] == food_name]:
+            if min_amt is not None:
+                model += (food_vars[i] >= min_amt, f"{food_name}_min")
+            if max_amt is not None:
+                model += (food_vars[i] <= max_amt, f"{food_name}_max")
 
-    # Add category constraints to ensure at least one food item per category is chosen
-    categories = df["Category"].unique()
-    for category in categories:
-        category_items = df[df["Category"] == category].index
-        model += (
-            pl.lpSum([food_vars[i] for i in category_items])
-            >= minimum_amount_per_category,
-            f"Category_{category}_min",
-        )
+    # Extract macronutrient and micronutrient columns dynamically
+    macronutrients = [col for col in df.columns if col[0] == "Macronutrient"]
+    micronutrients = [col for col in df.columns if col[0] == "Micronutrient"]
 
-    # Dummy objective to have a proper LP format
-    model += pl.lpSum(deviations)
-
-    # Solve the model
-    model_status = model.solve()
-
-    # Extract the solution into a DataFrame
-    results = []
-    for i in df.index:
-        quantity = pl.value(food_vars[i])
-        if (
-            quantity is not None and quantity > 0
-        ):  # Only consider food items with a non-zero quantity
-            results.append(
-                {
-                    "Name": df.loc[i, "Name"],
-                    "Category": df.loc[i, "Category"],
-                    "Amount": quantity,
-                    **{
-                        nutrient: df.loc[i, nutrient]
-                        for nutrient in df.columns
-                        if nutrient not in ["Name", "Category"]
-                    },
-                }
+    # Constraints for macronutrients
+    for nutrient in macronutrients:
+        if nutrient in flat_rdi_lower_bound:
+            goal = 100  # 100% of the lower bound as goal
+            model += (
+                pl.lpSum([df.loc[i, nutrient] * food_vars[i] for i in df.index])
+                >= goal - macro_tolerance,
+                f"{nutrient}_min",
+            )
+            if nutrient in flat_rdi_upper_bound:
+                # Relative to lower bound if lower exists
+                upper_bound_goal = (
+                    flat_rdi_upper_bound[nutrient] / flat_rdi_lower_bound[nutrient]
+                ) * goal
+                model += (
+                    pl.lpSum([df.loc[i, nutrient] * food_vars[i] for i in df.index])
+                    <= upper_bound_goal + macro_tolerance,
+                    f"{nutrient}_max",
+                )
+        elif nutrient in flat_rdi_upper_bound:
+            # If only upper bound is defined, set it as the 100% target
+            upper_bound_goal = 100  # 100% of the upper bound as goal
+            model += (
+                pl.lpSum([df.loc[i, nutrient] * food_vars[i] for i in df.index])
+                <= upper_bound_goal + macro_tolerance,
+                f"{nutrient}_max",
             )
 
-    # Create DataFrame from results
-    result_df = pd.DataFrame(results)
+    # Solve the macronutrient-focused model
+    model.solve()
+    print("\nMacronutrient Optimization Status:", pl.LpStatus[model.status])
 
-    # Calculate total nutritional intake from selected items
-    totals = {
-        "Name": "Total",
-        "Category": "Total",
-        **{
-            nutrient: sum(result_df[nutrient] * result_df["Amount"])
-            for nutrient in df.columns
-            if nutrient not in ["Name", "Category"]
-        },
+    # If macronutrient solution is feasible, proceed with micronutrient optimization
+    if pl.LpStatus[model.status] == "Optimal":
+        # Optimize micronutrients within the feasible macronutrient solutions
+        for nutrient in micronutrients:
+            model += (
+                pl.lpSum([df.loc[i, nutrient] * food_vars[i] for i in df.index])
+                >= goal - micro_tolerance,
+                f"{nutrient}_min",
+            )
+            if nutrient in flat_rdi_upper_bound:
+                upper_bound_goal = (
+                    flat_rdi_upper_bound[nutrient] / flat_rdi_lower_bound[nutrient]
+                ) * goal
+                model += (
+                    pl.lpSum([df.loc[i, nutrient] * food_vars[i] for i in df.index])
+                    <= upper_bound_goal + micro_tolerance,
+                    f"{nutrient}_max",
+                )
+
+        # Re-solve the model with the new objective focusing on micronutrients
+        model.solve()
+        print("\nMicronutrient Optimization Status:", pl.LpStatus[model.status])
+
+    return df, food_vars
+
+
+def visualize_optimization_results(df, rdi_dict, food_vars=None):
+
+    # Extract the solution into a DataFrame
+
+    if not (food_vars is None):
+        results = []
+        for i in df.index:
+            quantity = pl.value(food_vars[i])
+            if (
+                quantity is not None and quantity > 0
+            ):  # Only consider food items with a non-zero quantity
+                result_entry = {
+                    ("Non Nutrient Data", "FDC Name"): df.loc[
+                        i, ("Non Nutrient Data", "FDC Name")
+                    ],
+                    ("Non Nutrient Data", "Amount"): quantity,
+                }
+                # Add nutrient data dynamically handling MultiIndex
+                for nutrient in df.columns:
+                    if nutrient[0] != "Non Nutrient Data":  # Exclude non-nutrient data
+                        result_entry[nutrient] = df.loc[i, nutrient] * quantity
+                results.append(result_entry)
+
+        # Create DataFrame from results
+        result_df = pd.DataFrame(results)
+
+        # Calculate total nutritional intake from selected items
+        totals = {
+            ("Non Nutrient Data", "FDC Name"): "Total",
+            **{
+                nutrient: sum(result_df[nutrient])
+                for nutrient in df.columns
+                if nutrient[0] != "Non Nutrient Data"
+            },
+        }
+
+        # Create DataFrame for the total and goal rows
+        totals_df = pd.DataFrame([totals])
+
+    else:
+        totals_df = pd.DataFrame()
+
+    goal = 100
+
+    flat_rdi_lower_bound = {}
+    flat_rdi_upper_bound = {}
+
+    for category, nutrients in rdi_dict.items():
+        for nutrient, bounds in nutrients.items():
+            if bounds["lower_bound"] is not None:
+                flat_rdi_lower_bound[(category, nutrient)] = bounds["lower_bound"]
+            if "upper_bound" in bounds and bounds["upper_bound"] is not None:
+                flat_rdi_upper_bound[(category, nutrient)] = bounds["upper_bound"]
+
+    flat_rdi_upper_bound_rel = {}
+    flat_rdi_lower_bound_rel = {}
+
+    for category, nutrients in rdi_dict.items():
+        for nutrient, bounds in nutrients.items():
+            if (bounds["lower_bound"] is None) and (bounds["upper_bound"] is not None):
+                flat_rdi_upper_bound_rel[(category, nutrient)] = 100
+                flat_rdi_lower_bound_rel[(category, nutrient)] = 0
+
+            if (bounds["lower_bound"] is not None) and (bounds["upper_bound"] is None):
+                flat_rdi_upper_bound_rel[(category, nutrient)] = float("inf")
+                flat_rdi_lower_bound_rel[(category, nutrient)] = 100
+
+            if (bounds["lower_bound"] is not None) and (
+                bounds["upper_bound"] is not None
+            ):
+                flat_rdi_upper_bound_rel[(category, nutrient)] = (
+                    flat_rdi_upper_bound[(category, nutrient)]
+                    / flat_rdi_lower_bound[(category, nutrient)]
+                ) * 100
+                flat_rdi_lower_bound_rel[(category, nutrient)] = 100
+
+    lower_bound = {
+        nutrient: flat_rdi_lower_bound_rel[nutrient]
+        for nutrient in df.columns
+        if nutrient[0] != "Non Nutrient Data"
     }
+    lower_bound[("Non Nutrient Data", "FDC Name")] = "Lower Bound"
+    lower_bound[("Non Nutrient Data", "FDC Name")] = "Lower Bound"
+    lower_bound_df = pd.DataFrame([lower_bound])
 
-    # Create DataFrame for the total and goal rows
-    totals_df = pd.DataFrame([totals])
-    goals["Name"] = "Goal"
-    goals_df = pd.DataFrame([goals])
+    upper_bound = {
+        nutrient: flat_rdi_upper_bound_rel[nutrient]
+        for nutrient in df.columns
+        if nutrient[0] != "Non Nutrient Data"
+    }
+    upper_bound[("Non Nutrient Data", "FDC Name")] = "Upper Bound"
+    upper_bound[("Non Nutrient Data", "FDC Name")] = "Upper Bound"
+    upper_bound_df = pd.DataFrame([upper_bound])
 
-    # Concatenate all together with 'Name' as a regular column
-    result_df = pd.concat([result_df, totals_df, goals_df], ignore_index=True)
-
-    return result_df
+    # Concatenate all together with 'Name' and 'Category' as a regular column
+    summary_df = pd.concat(
+        [totals_df, lower_bound_df, upper_bound_df], ignore_index=True
+    )
+    summary_df.columns = pd.MultiIndex.from_tuples(summary_df.columns)
+    result_df.columns = pd.MultiIndex.from_tuples(result_df.columns)
+    return result_df, summary_df

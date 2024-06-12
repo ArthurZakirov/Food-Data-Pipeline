@@ -1,0 +1,9 @@
+name: TranslatedFoodNameSchema
+fields:
+  - name: Input
+    description: The original regulated German food name
+    type: str
+
+  - name: Output
+    description: The translated English food name, formatted to include specific descriptors such as the form or processing state, aligning with Food Data Central standards.
+    type: str

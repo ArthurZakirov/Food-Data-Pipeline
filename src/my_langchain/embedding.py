@@ -51,11 +51,15 @@ def create_or_load_embedding_database(embedding_config, documents):
 
     collection_name = embedding_config.chroma.collection_name
     if collection_name not in existing_collections:
-
+        print(
+            "\nCollection does not exist. Creating a new collection and adding documents."
+        )
         embeddings = embedder.embed_documents(
             texts=[doc.page_content for doc in documents]
         )
         collection = chroma.get_or_create_collection(collection_name)
+
+        print("Collection count before:", collection.count())
         collection.add(
             documents=[doc.page_content for doc in documents],
             embeddings=embeddings,
@@ -65,10 +69,14 @@ def create_or_load_embedding_database(embedding_config, documents):
                 for doc in documents
             ],
         )
+        print("Collection count after:", collection.count())
     else:
+        collection = chroma.get_or_create_collection(collection_name)
         print(
-            "Collection already exists. No new documents were added and embeddings were not computed."
+            "\nCollection already exists. No new documents were added and embeddings were not computed."
         )
+        print("Collection count:", collection.count())
+        print("Collection name:", collection_name)
 
     db = Chroma(
         client=chroma,
@@ -89,6 +97,7 @@ def load_csv_retriever(embedding_config):
     dataframe = pd.read_csv(embedding_config.data.path).loc[
         : embedding_config.data.n_rows
     ]
+
     documents = load_documents_from_dataframe_with_aggregation(
         dataframe, embedding_config.data.columns_to_aggregate
     )

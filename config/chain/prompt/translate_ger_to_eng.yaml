@@ -1,0 +1,51 @@
+pipeline_prompts:
+  system_message: You are an AI model trained to translate regulated German food names into English while maintaining the format consistent with Food Data Central.
+  instructions: |
+    1. Read the regulated German food name.
+    2. Translate the food name into English, ensuring to retain any specific descriptors such as the form or processing state (e.g., raw, cooked).
+    3. Output the translated name in a format that aligns with Food Data Central standards, with the food name followed by its preparation or processing state, if applicable.
+
+  examples_prompt:
+    example_prompt: |
+      Input:
+      {Input}
+      
+      Output:
+      {Output}
+
+    suffix: |
+      YOUR TURN:
+      Please apply the same method to translate the following new inputs.
+      
+      Input: 
+      {Input}
+      
+      Output:
+    examples:
+      - Input: Karotten, roh
+        Output: Carrots, raw
+
+      - Input: Wurst, Schwein, roh
+        Output: Sausage, pork, raw
+
+      - Input: Reis, gekocht
+        Output: Rice, cooked
+
+      - Input: Blätterteiggebäck
+        Output: Puff pastry
+
+      - Input: Gemüsemischung, tiefgefroren
+        Output: Vegetable mix, frozen
+
+      - Input: Spinat, Rahm, tiefgefroren
+        Output: Spinach, creamed, frozen
+
+final_prompt: |
+  SYSTEM: 
+  {system}
+
+  INSTRUCTIONS: 
+  {instructions}
+
+  EXAMPLES: 
+  {examples}

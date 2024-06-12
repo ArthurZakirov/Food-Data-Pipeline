@@ -1,0 +1,9 @@
+name: RegulatedFoodNameSchema
+fields:
+  - name: Input
+    description: The original name of the product item
+    type: str
+
+  - name: Output
+    description: "Food name followed by its preparation or processing state, formatted as a single string separated by a comma (e.g., 'Carrots, raw'). Should not contain any non-food related words such as weight, unit amount, brand name, size description, bio, etc."
+    type: str

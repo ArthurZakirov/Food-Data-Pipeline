@@ -1,0 +1,62 @@
+pipeline_prompts:
+  system_message: You are an AI model trained to extract detailed food names from product names and convert them into a format that includes both the specific form of the food and its processing or preparation state, similar to entries found in FoodData Central. The output should reflect nuances such as the form or cut of the food, its specific preparation, and processing status.
+  instructions: |
+    1. Read the branded product name.
+    2. Identify and extract the detailed food item name, considering both the ingredient and its specific form (e.g., whole, cut, ground, juice). Exclude any non-food related words such as weight, unit amount, brand name, size description, bio, etc. Specifically, words like "Express", "Original", "Vegan", and "Bio" should not appear in the output.
+    3. Determine and infer the preparation or processing state of the food based on explicit description or known brand characteristics. Note that "Express" typically indicates that the food is precooked.
+    4. Output the food name and state as a single string, with the food name followed by a comma and the state (e.g., 'Carrots, raw'). Ensure that brand-related terms or unnecessary descriptors are not included in the output.
+
+  examples_prompt:
+    example_prompt: |
+      Input:
+      {Input}
+      
+      Output:
+      {Output}
+
+    suffix: |
+      YOUR TURN:
+      Please apply the same method to process the following new inputs.
+      
+      Input: 
+      {Input}
+      
+      Output:
+    examples:
+      - Input: Gärtnerei Böck Karotten aus der Region 1kg
+        Output: Karotten, roh
+
+      - Input: REWE Bio Avocado 1 Stück
+        Output: Avocado, roh
+
+      - Input: Mini-Wassermelone 1 Stück
+        Output: Wassermelone, roh
+
+      - Input: UNSER LAND Bio Kartoffel-Riesen 1,5kg
+        Output: Kartoffel, roh
+
+      - Input: REWE Beste Wahl Express Basmati Reis 250g
+        Output: Reis, gekocht
+
+      - Input: REWE Bio Original Nürnberger Rostbratwürstchen 160g
+        Output: Wurst, Schwein, roh
+
+      - Input: ja! Cuorino 225g
+        Output: Blätterteiggebäck
+
+      - Input: Frosta Gemüse Mix
+        Output: Gemüsemischung, tiefgefroren
+
+      - Input: Iglo Rahm Spinat
+        Output: Spinat, Rahm, tiefgefroren
+
+final_prompt: |
+  SYSTEM: 
+  {system}
+
+  INSTRUCTIONS: 
+  {instructions}
+
+  EXAMPLES: 
+  {examples}
+
