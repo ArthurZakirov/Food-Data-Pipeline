@@ -10,7 +10,7 @@ from plotly.subplots import make_subplots
 
 # data_path = "data/processed/fdc_data.h5"
 
-data_path = "data/processed/merged_rewe_fdc_data.csv"
+data_path = "data/processed/merged_rewe_fdc_insulin_time.csv"
 
 page_title = "Nutrition Optimization Dashboard"
 page_icon = ":food:"
@@ -28,11 +28,8 @@ st.title(f"{page_icon} Welcome To: {page_title}")
 streamlit_dataset_upload(default_data_path=data_path)
 
 df = st.session_state["data"]
-url = df.loc[0, ("Non Nutrient Data", "Image URL")]
-st.image(url, caption="Sample Image", use_column_width=True)
 
 
-# Example data similar to the image
 data = {
     "General": {
         "Energy": [28.0, "kcal", "1%"],
@@ -108,11 +105,6 @@ def add_table_with_bars(fig, data, row, col, title):
     percentages = [convert_percentage(val[2]) for val in data.values()]
     bars = [create_bar_text(p) for p in percentages]
     cells_values = [nutrients, amounts, units, bars]
-
-    st.write(f"Nutrients: {nutrients}")
-    st.write(f"Amounts: {amounts}")
-    st.write(f"Units: {units}")
-    st.write(f"Bars: {bars}")
 
     cells = dict(
         values=cells_values,

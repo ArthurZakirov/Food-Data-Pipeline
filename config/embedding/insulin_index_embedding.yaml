@@ -1,0 +1,10 @@
+model: text-embedding-3-small
+
+data:
+    path: data/processed/insulin_index.csv
+    columns_to_aggregate: ["Insulin Index Food Name"]
+    n_rows: 100000
+
+chroma:
+    path: data/processed/chroma.db
+    collection_name: insulin_index_data

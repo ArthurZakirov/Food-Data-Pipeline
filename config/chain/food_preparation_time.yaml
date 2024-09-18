@@ -1,0 +1,8 @@
+defaults:
+  - prompt: food_preparation_time
+  - model: default
+  - response_schema: food_preparation_time
+  
+type: data_processing
+input_type: string # string, dict, message, chat_history_to_str, last_chat_message_str_from_chat
+output_parser: JsonOutputToolsParser

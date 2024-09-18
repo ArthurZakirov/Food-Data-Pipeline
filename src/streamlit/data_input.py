@@ -28,7 +28,6 @@ def streamlit_dataset_upload(default_data_path):
         else:
             if default_data_path.endswith(".csv"):
                 df = pd.read_csv(default_data_path)
-                print("\nHello World\n  ", df.columns)
                 df.columns = pd.MultiIndex.from_tuples(
                     [tuple(c.split(".")) for c in df.columns]
                 )

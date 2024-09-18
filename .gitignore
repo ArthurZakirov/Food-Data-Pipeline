@@ -1,16 +1,20 @@
+# DATA
 data/raw/*
 data/processed/*
+data/final/*
 !data/.gitkeep
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+!data/final/.gitkeep
 
+# JUPYTER
 !notebooks/.gitkeep
 
+# OUTPUTS
 outputs/*
 !outputs/.gitkeep
 *.env
 *.pyc
-results/
-google_calendar_env/*
+results/*
+reports/*
 
-!config/.gitkeep

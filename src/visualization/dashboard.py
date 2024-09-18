@@ -55,13 +55,16 @@ def create_radar_chart(df, names):
 
 def visualize_optimization_result_nutrient_breakdown(results_df):
     macro_df = pd.concat(
-        [results_df[["Macronutrient"]], results_df[[("Non Nutrient Data", "Amount")]]],
+        [
+            results_df[["Macronutrient"]],
+            results_df[[("Non Nutrient Data", "Optimal Quantity")]],
+        ],
         axis=1,
     )
     macro_df = macro_df.set_index(results_df[("Non Nutrient Data", "FDC Name")].values)
     macro_df = macro_df[~macro_df.index.isin(["Total", "Lower Bound", "Upper Bound"])]
     macro_df.columns = macro_df.columns.get_level_values(1)
-    macro_df = macro_df.drop(columns=["Amount"])
+    macro_df = macro_df.drop(columns=["Optimal Quantity"])
     df_t = macro_df.transpose()
 
     macro_fig = px.bar(
@@ -82,13 +85,16 @@ def visualize_optimization_result_nutrient_breakdown(results_df):
     )
 
     micro_df = pd.concat(
-        [results_df[["Micronutrient"]], results_df[[("Non Nutrient Data", "Amount")]]],
+        [
+            results_df[["Micronutrient"]],
+            results_df[[("Non Nutrient Data", "Optimal Quantity")]],
+        ],
         axis=1,
     )
     micro_df = micro_df.set_index(results_df[("Non Nutrient Data", "FDC Name")].values)
     micro_df = micro_df[~micro_df.index.isin(["Total", "Lower Bound", "Upper Bound"])]
     micro_df.columns = micro_df.columns.get_level_values(1)
-    micro_df = micro_df.drop(columns=["Amount"])
+    micro_df = micro_df.drop(columns=["Optimal Quantity"])
     df_t = micro_df.transpose()
 
     micro_fig = px.bar(

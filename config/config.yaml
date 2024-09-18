@@ -1,17 +1,17 @@
 defaults:
-  - chain: match_food_names
-  - embedding: rewe_embedding
-
-# data:
-#   input_path: data/processed/cleaned_rewe_dataset_with_extracted_names.csv
-#   input_column: Regulated Name
-#   output_path: data/processed/cleaned_rewe_dataset_with_extracted_names.csv
-#   output_column: Regulated Name English
+  - chain: food_preparation_time
+  - embedding: rewe_fdc_embedding
 
 data:
-  rewe_path: data/processed/cleaned_rewe_dataset_with_extracted_names.csv
-  fdc_path: data/processed/fdc_data.csv
-  output_path: data/processed/rewe_plus_fdc.csv
+  input_path: data/processed/merged_rewe_fdc_insulin.csv
+  input_column: Non Nutrient Data.FDC Name
+  output_path: data/processed/merged_rewe_fdc_insulin_time.csv
+  output_column: Non Nutrient Data.Preparation Time
+
+# data:
+#   rewe_path: data/processed/cleaned_rewe_dataset_with_extracted_names.csv
+#   fdc_path: data/processed/fdc_data.csv
+#   output_path: data/processed/rewe_plus_fdc.csv
 
 hydra:
   run:

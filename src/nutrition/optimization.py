@@ -2,7 +2,7 @@ import pulp as pl
 import pandas as pd
 
 
-def calculate_relative_nutrient_df(df, rdi_dict, amount_unit=100, goal=100):
+def calculate_relative_nutrient_df(df, rdi_dict, optimization_unit_size=100, goal=100):
 
     ################
     # Flatten the RDI bounds
@@ -31,7 +31,7 @@ def calculate_relative_nutrient_df(df, rdi_dict, amount_unit=100, goal=100):
 
         if col[0] != "Non Nutrient Data":
             # Multiply by the amount unit to get the actual amount
-            percentage_df[col] = percentage_df[col] * amount_unit / 100
+            percentage_df[col] = percentage_df[col] * optimization_unit_size / 100
 
     percentage_df.columns = pd.MultiIndex.from_tuples(
         [x for x in percentage_df.columns]
@@ -41,12 +41,22 @@ def calculate_relative_nutrient_df(df, rdi_dict, amount_unit=100, goal=100):
 
 
 def optimize_diet(
-    df, rdi_dict, food_constraints, amount_unit, macro_tolerance=10, micro_tolerance=100
+    daily_food_budget,
+    cost_factor,
+    time_factor,
+    insulin_factor,
+    fullness_factor,
+    df,
+    rdi_dict,
+    food_constraints,
+    optimization_unit_size,
+    macro_tolerance=10,
+    micro_tolerance=100,
 ):
     df = df.copy()
     goal = 100
     df, flat_rdi_lower_bound, flat_rdi_upper_bound = calculate_relative_nutrient_df(
-        df, rdi_dict, amount_unit, goal
+        df, rdi_dict, optimization_unit_size, goal
     )
 
     # Create the optimization model
@@ -55,9 +65,63 @@ def optimize_diet(
     # Decision variables: Amounts of each food item to consume
     food_vars = pl.LpVariable.dicts("Food", df.index, lowBound=0, cat=pl.LpInteger)
 
-    # Set the objective: Minimize the number of different foods used
-    model += pl.lpSum(food_vars[i] for i in df.index)
+    ###########################################
+    # UTILITY FUNCTION
+    ###########################################
 
+    total_cost = pl.lpSum(
+        [
+            optimization_unit_size
+            / 100
+            * df.loc[i, ("Non Nutrient Data", "Price per 100g")]
+            * food_vars[i]
+            for i in df.index
+        ]
+    )
+
+    total_time = pl.lpSum(
+        [
+            df.loc[i, ("Non Nutrient Data", "Preparation Time")] * food_vars[i]
+            for i in df.index
+        ]
+    )
+
+    total_insulin = pl.lpSum(
+        [
+            df.loc[i, ("Non Nutrient Data", "Insulin Index")]
+            * food_vars[i]
+            * (
+                (optimization_unit_size / 100)
+                * df.loc[i, ("Energy", "Energy [KCAL]")]
+                * 4.184
+                / 1000
+            )
+            for i in df.index
+        ]
+    )
+
+    total_fullness = pl.lpSum(
+        [
+            df.loc[i, ("Non Nutrient Data", "Fullness Factor")]
+            * ((optimization_unit_size / 100) * df.loc[i, ("Energy", "Energy [KCAL]")])
+            * food_vars[i]
+            for i in df.index
+        ]
+    )
+
+    model += (total_cost <= daily_food_budget, f"budget")
+
+    utility_function = (
+        cost_factor * total_cost
+        + time_factor * total_time
+        + insulin_factor * total_insulin
+        + fullness_factor * total_fullness
+    )
+    model += utility_function
+
+    ###########################################
+    # CONSTRAINTS
+    ###########################################
     for food_name, limits in food_constraints.items():
         min_amt, max_amt = limits
         for i in df.index[df[("Non Nutrient Data", "FDC Name")] == food_name]:
@@ -143,12 +207,13 @@ def create_optimization_results_summary(df, rdi_dict, food_vars=None):
                     ("Non Nutrient Data", "FDC Name"): df.loc[
                         i, ("Non Nutrient Data", "FDC Name")
                     ],
-                    ("Non Nutrient Data", "Amount"): quantity,
+                    ("Non Nutrient Data", "Optimal Quantity"): quantity,
                 }
                 # Add nutrient data dynamically handling MultiIndex
                 for nutrient in df.columns:
                     if nutrient[0] != "Non Nutrient Data":  # Exclude non-nutrient data
                         result_entry[nutrient] = df.loc[i, nutrient] * quantity
+
                 results.append(result_entry)
 
         # Create DataFrame from results
@@ -236,12 +301,15 @@ def create_optimization_results_summary(df, rdi_dict, food_vars=None):
             return x
 
     # Apply the conversion across the DataFrame
-    results_df = results_df.applymap(convert_to_int)
-    total_df = pd.concat([summary_df, results_df], axis=0)
+    result_df = result_df.applymap(convert_to_int)
+    total_df = pd.concat([summary_df, result_df], axis=0)
     return result_df, summary_df, total_df
 
 
-def save_optimization_results(summary_df, results_df, output_path):
-    save_df = results_df.copy()
-    save_df.columns = [f"{col[0]}.{col[1]}" for col in save_df.columns]
-    save_df.to_csv(output_path, index=False)
+def save_optimization_results(output_path, results_df):
+    flat_column_result_df = results_df.copy()
+    flat_column_result_df.columns = [
+        f"{col[0]}.{col[1]}" for col in flat_column_result_df.columns
+    ]
+    flat_column_result_df.to_csv(output_path, index=False)
+    return flat_column_result_df

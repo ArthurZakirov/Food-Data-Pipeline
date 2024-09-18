@@ -267,6 +267,9 @@ def user_input_micronutrients(rdi_dict, micro_ranges):
             step=1.0,
         )
         micro_ranges[nutrient] = range
+
+        # rdi_dict["Micronutrient"][nutrient]["lower_bound"] = range[0]
+        # rdi_dict["Micronutrient"][nutrient]["upper_bound"] = range[1]
     return micro_ranges
 
 
@@ -285,31 +288,60 @@ def show_micronutrient_health_outcomes(rdi_dict, path):
 
 
 def user_input_optimization_settings():
-    optimization_mode = st.radio(
-        "Select Mode",
-        ("Minimize Cost, given Food Quality", "Maximize Food Quality, given cost"),
-        key="optimization_mode",
-    )
+    cols = st.columns(4)
 
-    if optimization_mode == "Maximize Food Quality, given cost":
-        daily_food_budget = st.slider(
-            "Daily Food Budget [EUR]",
+    with cols[0]:
+        cost_factor = st.number_input(
+            "Importance of SAVING MONEY",
             min_value=0,
-            max_value=50,
+            max_value=10,
             step=1,
-            key="daily_food_budget_slider",
+            key="cost_factor",
         )
 
-    else:
-        daily_food_budget = None
+    with cols[1]:
+        time_factor = st.number_input(
+            "Importance of SAVING TIME",
+            min_value=0,
+            max_value=10,
+            step=1,
+            key="time_factor",
+        )
 
-    amount_unit = st.number_input(
+    with cols[2]:
+        insulin_factor = st.number_input(
+            "Importance of INSULIN",
+            min_value=0,
+            max_value=10,
+            step=1,
+            key="insulin_factor",
+        )
+
+    with cols[3]:
+        fullness_factor = st.number_input(
+            "Importance of FULLNESS",
+            min_value=-10,
+            max_value=10,
+            step=1,
+            key="fullness_factor",
+        )
+
+    daily_food_budget = st.slider(
+        "Daily Food Budget [EUR]",
+        min_value=0,
+        max_value=50,
+        step=1,
+        value=10,
+        key="daily_food_budget_slider",
+    )
+
+    optimization_unit_size = st.number_input(
         "Enter the amount unit for the foods (e.g. 1g, 10g, 100g)",
         min_value=1,
         max_value=100,
         step=1,
         value=1,
-        key="amount_unit",
+        key="optimization_unit_size",
     )
 
     micro_tolerance = st.number_input(
@@ -321,7 +353,15 @@ def user_input_optimization_settings():
         key="micro_tolerance",
     )
 
-    return optimization_mode, daily_food_budget, amount_unit, micro_tolerance
+    return (
+        cost_factor,
+        time_factor,
+        insulin_factor,
+        fullness_factor,
+        daily_food_budget,
+        optimization_unit_size,
+        micro_tolerance,
+    )
 
 
 # Function to manage food constraints

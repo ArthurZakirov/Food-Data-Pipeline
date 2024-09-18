@@ -35,34 +35,15 @@ st.set_page_config(
 )
 st.title(f"{page_icon} {page_title}")
 
-if "names" not in st.session_state:
-    st.session_state["names"] = []
+
+import pandas as pd
+import pulp as pl
 
 
-# Define a function to add a new name to the list
-def add_name():
-    # Check if the current input is not empty and not already in the list
-    if (
-        st.session_state.food_name
-        and st.session_state.food_name not in st.session_state["names"]
-    ):
-        st.session_state["names"].append(st.session_state.food_name)
-        # Optionally, clear the input box after adding
-        st.session_state.food_name = ""
+from src.nutrition.formulas import calculate_nutrient_goals
+from src.nutrition.optimization import calculate_relative_nutrient_df
+from src.visualization.dashboard import nutrition_scatter_plot
 
-
-# Create a text input for food name
-name = st.text_input("Food Name", key="food_name")
-
-# Create a button to add the current name to the list
-st.button("Add another", on_click=add_name)
-
-names = st.session_state["names"]
-df = st.session_state["data"]
-
-
-macro_fig = visualize_polar_chart(df=df, names=names)
-st.plotly_chart(macro_fig)
 
 rdi_dict = calculate_nutrient_goals(
     weight=89,
@@ -72,9 +53,25 @@ rdi_dict = calculate_nutrient_goals(
     activity_scale=0.5,
     gender="male",
 )
+df = st.session_state["data"]
+
 relative_df, _, _ = calculate_relative_nutrient_df(
-    df, rdi_dict, amount_unit=100, goal=100
+    df, rdi_dict, optimization_unit_size=100, goal=100
 )
 
-micro_fig = visualize_micronutrient_polar_chart(relative_df, names)
-st.plotly_chart(micro_fig)
+df[("Additional Metrics", "Nutrivore")] = relative_df["Micronutrient"].mean(axis=1)
+df[("Additional Metrics", "Protein / Energy [G / KCAL]")] = (
+    df[("Macronutrient", "Protein [G]")] / df[("Energy", "Energy [KCAL]")]
+)
+
+
+title = "Protein Density vs Protein"
+
+x_col = ("Additional Metrics", "Protein / Energy [G / KCAL]")
+y_col = ("Additional Metrics", "Nutrivore")
+z_col = ("Energy", "Energy [KCAL]")
+
+fig = nutrition_scatter_plot(df, x_col, y_col, z_col, title, delimiter=", ")
+fig.show()
+
+st.plotly_chart(fig)

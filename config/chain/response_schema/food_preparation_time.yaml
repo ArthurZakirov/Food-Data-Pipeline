@@ -1,10 +1,13 @@
 name: ProductPreparationTimeSchema
 fields:
   - name: product_name
+    type: str
     description: The original name of the product item
 
   - name: preparation_time
+    type: int
     description: The total time required to make the product edible in minutes
 
   - name: preparation_steps
+    type: list
     description: All steps required to make the product edible, with the time required for each step
