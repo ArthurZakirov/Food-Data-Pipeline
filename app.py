@@ -10,7 +10,7 @@ from plotly.subplots import make_subplots
 
 # data_path = "data/processed/fdc_data.h5"
 
-data_path = "data/processed/merged_rewe_fdc_insulin_time.csv"
+data_path = "data/final/merged_rewe_fdc_insulin_time.csv"
 
 page_title = "Nutrition Optimization Dashboard"
 page_icon = ":food:"
