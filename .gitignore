@@ -1,7 +1,6 @@
 # DATA
 data/raw/*
 data/processed/*
-data/final/*
 !data/.gitkeep
 !data/raw/.gitkeep
 !data/processed/.gitkeep
