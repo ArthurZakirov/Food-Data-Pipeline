@@ -1,18 +1,14 @@
-# Meal Plan Generator
+# Hollistic Food Dataset
 
 ## Overview
+This project fetches nutrition data from a variety of data sources and merges it into one standardized dataset, which is used for data analysis and mealplan generation.
 
-This project generates personalized meal plans based on a user's caloric needs and body composition goals. Users can customize macronutrient and micronutrient targets, or use default recommendations based on the daily recommended intake for adults. Additionally, the meal plan generator offers optimizations for specific dietary goals such as weight loss, health improvement, or affordability.
+I've built pipelines for the following datasources, out of which only some turned out to be useful:
+- **FoodData Central** SR Legacy Food (Click [here](https://fdc.nal.usda.gov/download-datasets.html))
+- **REWE Online Shop Data**  Click [here](https://shop.rewe.de/)
+- **Insulin Index** Click [here](https://www.scribd.com/document/379537249/Bell-KJ-thesis-2-pdf) & [here](https://foodstruct.com/insulin-index-chart-food-list)
 
-## Features
 
-- Generate meal plans tailored to user-specific caloric needs and goals.
-- Customize macronutrient values (protein, fats, carbs) and micronutrient values (fiber, vitamins, minerals, etc.).
-- Default nutrient values based on recommended daily intake.
-- Optimize meal plans for:
-  - **Fullness Factor**: To prioritize feeling full while maintaining weight loss.
-  - **Insulin Index**: For better insulin management and health benefits.
-- Option to set a budget for affordability.
 
 ## Prerequisites
 
@@ -33,7 +29,7 @@ This project generates personalized meal plans based on a user's caloric needs a
    ```bash
    pip install -r requirements.txt
 
-## Dataset 1: REWE 
+# Dataset: REWE 
 ### 1. Download & Extract
 Download and setup following instructions [here](https://learn.microsoft.com/en-us/microsoft-edge/webdriver-chromium/?tabs=python&form=MA13LH)
 
@@ -60,22 +56,23 @@ python scrape_rewe_run.py --output_path=<path/to/your/data> --remote-debugging-p
 | ```--edge_driver_path``` | ```"C:\\Users\\arthu\\Tools\\WebDriver\\edgedriver_win64\\msedgedriver.exe"``` | Path to msedgedriver.exe |
 | ```--url``` | ```"https://shop.rewe.de/"``` | URL to the Rewe Website |
 
-## Dataset 2: FoodData_Central
-Legacy Food
-```bash
-FoodData_Central_sr_legacy_food_csv_2018-04
-```
-Foundation Food
-```bash
-FoodData_Central_foundation_food_csv_2024-04-18
-```
 
-Also download the Kaggle satiety dataset
+# Dataset: FoodData Central** ([here](https://fdc.nal.usda.gov/download-datasets.html))
+Latest Downloads > SR Legacy > April 2018 (CSV)
+[README](images/readme/FoodDataCentral-Download%20Data.png)
 
-Also use chatgpt to extract insulin index from online website into csv file
+I selected the SR Legacy version over all other datasets by the USDA because it is the only one that satisfies the following 2 properties:
+- It has the highest number of micronutrients provided
+- It has general food names (instead of branded food names), which makes it more convenient to match with foods from other data sources
 
-Download these two and put them into
-```bash
-data/raw
-```
+1. Download the folder
+2. Unzip the folder
+3. Move the folder so that the path becomes "data/raw/FoodData_Central_sr_legacy_food_csv_2018-04"  
 
+
+# Dataset: Insulin Index
+### University Of Sydney: Bell KJ Thesis
+Upload [this](https://www.scribd.com/document/379537249/Bell-KJ-thesis-2-pdf) pdf to [ChatGPT](https://chatgpt.com/) and give it the task to extract the data into a csv file.
+
+### Foodstruct
+Export [this](https://foodstruct.com/insulin-index-chart-food-list) website as a pdf and upload it to [ChatGPT](https://chatgpt.com/) and give it the task to extract the data into a csv file.
