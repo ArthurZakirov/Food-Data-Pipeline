@@ -58,8 +58,23 @@ python scrape_rewe_run.py --output_path=<path/to/your/data> --remote-debugging-p
 | ```--edge_driver_path``` | ```"C:\\Users\\arthu\\Tools\\WebDriver\\edgedriver_win64\\msedgedriver.exe"``` | Path to msedgedriver.exe |
 | ```--url``` | ```"https://shop.rewe.de/"``` | URL to the Rewe Website |
 
+### 3. Process Rewe Dataset
+1. Run the following
+```bash
+python process_rewe_dataset.py
+```
+2. Inside `config/config.yaml` set `defaults.chain` to `extract_regulated_food_name`. Then run
+```bash
+python run_llm_processing_of_df.py
+```
+3. Inside `config/config.yaml` set `defaults.chain` to `translate_ger_to_eng`. Then run
+```bash
+python run_llm_processing_of_df.py
+```
+
 
 # Dataset: FoodData Central** ([here](https://fdc.nal.usda.gov/download-datasets.html))
+### 1. Download Dataset
 Latest Downloads > SR Legacy > April 2018 (CSV)
 [README](images/readme/FoodDataCentral-Download%20Data.png)
 
@@ -71,6 +86,10 @@ I selected the SR Legacy version over all other datasets by the USDA because it 
 2. Unzip the folder
 3. Move the folder so that the path becomes "data/raw/FoodData_Central_sr_legacy_food_csv_2018-04"  
 
+Run this
+```bash
+python process_fdc_data.py
+```
 
 # Dataset: Insulin Index
 ### University Of Sydney: Bell KJ Thesis
@@ -78,3 +97,45 @@ Upload [this](https://www.scribd.com/document/379537249/Bell-KJ-thesis-2-pdf) pd
 
 ### Foodstruct
 Export [this](https://foodstruct.com/insulin-index-chart-food-list) website as a pdf and upload it to [ChatGPT](https://chatgpt.com/) and give it the task to extract the data into a csv file.
+
+# Merging Datasets
+### 1. Merge REWE & FDC
+Inside `config/config.yaml` set `defaults.embedding` to `rewe_embedding`. Then run
+```bash
+python create_embeddings.py
+```
+
+Inside `config/config.yaml` set `defaults.embedding` to `fdc_embedding`. Then run
+```bash
+python create_embeddings.py
+```
+
+Run this
+```bash
+python merge_rewe_and_fdc_using_embeddings.py
+```
+
+### 2. Merge REWE & FDC & Insulin Index
+Inside `config/config.yaml` set `defaults.embedding` to `insulin_index_embedding`. Then run
+```bash
+python create_embeddings.py
+```
+Inside `config/config.yaml` set `defaults.embedding` to `rewe_fdc_embedding`. Then run
+```bash
+python create_embeddings.py
+```
+Run this
+```bash
+python merge_rewe_and_fdc_with_insulin_using_embeddings.py
+```
+
+### 3. Merge REWE & FDC & Insulin Index & Fullness Factor
+```bash
+python append_fullness_factor.py
+```
+
+### 4. Merge REWE & FDC & Insulin Index & Fullness Factor & Preparation Time
+Inside `config/config.yaml` set `defaults.chain` to `food_preparation_time`. Then run
+```bash
+python run_llm_processing_of_df.py
+```
