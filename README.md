@@ -1,13 +1,15 @@
 # Hollistic Food Dataset
+![Data-Food-Pipeline](images/Food%20Data%20Pipeline.drawio.svg)
 
 ## Overview
-This project fetches nutrition data from a variety of data sources and merges it into one standardized dataset, which is used for data analysis and mealplan generation.
+This project fetches nutrition data from a variety of data sources and merges it into one standardized dataset, which is used for data analysis and mealplan generation in this project [here](https://github.com/ArthurZakirov/Mealplan-App)
 
 I've built pipelines for the following datasources, out of which only some turned out to be useful:
 - **FoodData Central** SR Legacy Food (Click [here](https://fdc.nal.usda.gov/download-datasets.html))
 - **REWE Online Shop Data**  Click [here](https://shop.rewe.de/)
 - **Insulin Index** Click [here](https://www.scribd.com/document/379537249/Bell-KJ-thesis-2-pdf) & [here](https://foodstruct.com/insulin-index-chart-food-list)
-
+- **Fullness Factor** calculated through a formula
+- **Preparation Time** estimated by openAi API
 
 
 ## Prerequisites
