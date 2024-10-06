@@ -1,9 +1,8 @@
 # Food Data Pipeline
 ![Data-Food-Pipeline](images/Food%20Data%20Pipeline.drawio.svg)
-
+- [Overview](#overview)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
-- [Overview](#overview)
 - [Rewe-Online-Shop-Data](#rewe-online-shop-data)
 - [FoodData Central](#fooddata-central)
 - [Insulin Index](#insulin-index)
@@ -27,11 +26,11 @@ I've built pipelines for the following datasources, out of which only some turne
 ## Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/meal-plan-generator.git
+   git clone https://github.com/ArthurZakirov/food-data-pipeline.git
 
 2. Navigate to the project directory:
    ```bash
-    cd meal-plan-generator
+    cd food-data-pipeline
 
 3. Install the dependencies
    ```bash
