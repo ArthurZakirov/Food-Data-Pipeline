@@ -17,3 +17,6 @@ outputs/*
 results/*
 reports/*
 
+# VENV
+venv/*
+
