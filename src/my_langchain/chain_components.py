@@ -20,7 +20,7 @@ from langchain_openai.output_parsers import (
     JsonOutputToolsParser,
 )
 
-from langchain.pydantic_v1 import BaseModel, Field
+from pydantic import BaseModel, Field
 from typing import List, Union
 
 

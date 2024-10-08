@@ -56,11 +56,11 @@ def merge_embeddings_on_similarity(df1, df2):
 
 
 # MERGE REWE+FDC AND INSULIN INDEX DATA USING EMBEDDINGS
-similarity_threshold = 0.5
+similarity_threshold = 0
 path = "data/processed/chroma.db"
-collection1_name = "rewe_fdc"
+collection1_name = "rewe_fdc_50_percent"
 collection2_name = "insulin_index_data"
-df1_path = "data/processed/merged_rewe_fdc_data.csv"
+df1_path = "data/processed/mmerge_rewe_fdc_50_percent.csv"
 df2_path = "data/processed/insulin_index.csv"
 column1 = "Non Nutrient Data.FDC Name"
 column2 = "Insulin Index Food Name"

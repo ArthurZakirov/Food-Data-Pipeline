@@ -1,10 +1,10 @@
 model: text-embedding-3-small
 
 data:
-    path: data/processed/merged_rewe_fdc_data.csv
+    path: data/processed/merge_rewe_fdc_50_percent.csv
     columns_to_aggregate: ["Non Nutrient Data.FDC Name"]
     n_rows: 100000
 
 chroma:
     path: data/processed/chroma.db
-    collection_name: rewe_fdc
+    collection_name: rewe_fdc_50_percent

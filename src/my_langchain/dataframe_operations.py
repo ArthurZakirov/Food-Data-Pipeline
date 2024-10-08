@@ -1,6 +1,6 @@
 import pandas as pd
 from tqdm import trange
-from langchain.pydantic_v1 import BaseModel, Field, create_model
+from pydantic import BaseModel, Field, create_model
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain_openai.output_parsers import JsonOutputKeyToolsParser

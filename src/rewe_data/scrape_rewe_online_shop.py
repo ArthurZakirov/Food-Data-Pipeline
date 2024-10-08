@@ -34,7 +34,7 @@ parser.add_argument(
 parser.add_argument(
     "--output_path",
     help="Where to story your scraped dataset",
-    default="data/raw/rewe_dataset_with_images.csv",
+    default="data/raw/rewe_dataset.csv",
 )
 parser.add_argument("--remote_debugging_port", help="Debugging Port", default=9222)
 parser.add_argument(

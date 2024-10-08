@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--raw_data_path",
     type=str,
-    default="data/raw/rewe_dataset_with_images.csv",
+    default="data/raw/rewe_dataset.csv",
 )
 parser.add_argument(
     "--weights_list_path",

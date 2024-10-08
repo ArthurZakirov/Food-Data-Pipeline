@@ -6,9 +6,8 @@ import pandas as pd
 
 from langchain_chroma import Chroma
 from langchain_openai.embeddings import OpenAIEmbeddings
-from langchain.document_loaders.csv_loader import CSVLoader
-from langchain.document_loaders.dataframe import DataFrameLoader
-
+from langchain_community.document_loaders import CSVLoader
+from langchain_community.document_loaders import DataFrameLoader
 from src.my_pandas.apply_lambda import aggregate_dataframe_columns
 
 

@@ -1,7 +1,7 @@
 import pandas as pd
-import argument_parser 
+import argparse 
 
-parser = argument_parser.ArgumentParser()
+parser = argparse.ArgumentParser()
 parser.add_argument(
     "--data_path",
     type=str,
