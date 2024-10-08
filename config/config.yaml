@@ -1,5 +1,5 @@
 defaults:
-  - chain: translate_ger_to_eng
+  - chain: food_preparation_time
   - embedding: rewe_fdc_embedding
 
 data:

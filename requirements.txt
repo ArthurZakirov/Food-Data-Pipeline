@@ -2,7 +2,7 @@ pandas
 tqdm
 selenium
 bs4
-hydra
+hydra-core
 langchain
 langchain_openai
 langchain_community
@@ -11,3 +11,4 @@ langchain_chroma
 tables
 ipykernel
 scipy
+python-dotenv

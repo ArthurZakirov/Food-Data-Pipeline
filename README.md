@@ -39,7 +39,9 @@ I've built pipelines for the following datasources, out of which only some turne
    pip install -r requirements.txt
    ```
 
-   If the installation of hydra fails, run `pip install hydra-core --upgrade --user`
+4. Create an environment variable named `OPENAI_API_KEY` on your local device (& add your openAI API key)
+
+
 # REWE Online Shop Data 
 ### 1. Setup Edge WebDriver
 Download and setup the Microsoft WebDriver folling the instructions [here](https://learn.microsoft.com/en-us/microsoft-edge/webdriver-chromium/?tabs=python&form=MA13LH)
@@ -160,11 +162,16 @@ python src/data_merging/merge_rewe_and_fdc_with_insulin_using_embeddings.py
 
 ### 3. Merge REWE & FDC & Insulin Index & Fullness Factor
 ```bash
-python src/fullness_factor/append_fullness_factor.py
+python src/fullness_factor/append_fullness_factor.py --data_path <path/to/your/dataset>
 ```
 
 ### 4. Merge REWE & FDC & Insulin Index & Fullness Factor & Preparation Time
-Inside `config/config.yaml` set `defaults.chain` to `food_preparation_time`. Then run
+2. Set the following config inside `config/config.yaml`:
+-  `defaults.chain` to `food_preparation_time`
+- `data.input_path` to `data\processed\merged_rewe_fdc_insulin.csv`
+- `data.output_path` to `data/final/merged_rewe_fdc_insulin_time.csv`
+- `data.input_column` to `Non Nutrient Data.FDC Name`
+- `data.output_column` to `Non Nutrient Data.Preparation Time`
 ```bash
-python run_llm_processing_of_df.py
+python src/my_langchain/run_llm_processing_of_df.py
 ```

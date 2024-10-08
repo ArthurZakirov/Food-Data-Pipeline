@@ -48,6 +48,10 @@ def create_or_load_embedding_database(embedding_config, documents):
     chroma = chromadb.PersistentClient(path=embedding_config.chroma.path)
     existing_collections = {col.name for col in chroma.list_collections()}
 
+    print("\n\n\n\n")
+    print(f"existing_collections: {existing_collections}")
+
+
     collection_name = embedding_config.chroma.collection_name
     if collection_name not in existing_collections:
         print(

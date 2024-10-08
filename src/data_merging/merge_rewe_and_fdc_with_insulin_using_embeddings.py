@@ -11,6 +11,7 @@ from scipy.spatial.distance import cdist
 def load_chroma_collection(client_path, collection_name):
     chroma = chromadb.PersistentClient(path=client_path)
     collection = chroma.get_collection(collection_name)
+    print("Collection count:", collection.count())
 
     documents = collection.get(include=["embeddings", "metadatas", "documents"])
     embeddings = documents["embeddings"]
@@ -60,7 +61,7 @@ similarity_threshold = 0
 path = "data/processed/chroma.db"
 collection1_name = "rewe_fdc_50_percent"
 collection2_name = "insulin_index_data"
-df1_path = "data/processed/mmerge_rewe_fdc_50_percent.csv"
+df1_path = "data/processed/merge_rewe_fdc_50_percent.csv"
 df2_path = "data/processed/insulin_index.csv"
 column1 = "Non Nutrient Data.FDC Name"
 column2 = "Insulin Index Food Name"
